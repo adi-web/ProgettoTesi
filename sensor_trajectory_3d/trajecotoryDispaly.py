@@ -612,9 +612,9 @@ class workProcessBlender(QObject):
                 ["blender", "-b", "-P",  r"C:\Users\mucaj\Desktop\universita\tesi\blensor_lidar_simulation\run_simulation.py", "--",self.pathTrajectory,
                 self.pathSensor,
                 self.x,self.y],
-                stdout=subprocess.PIPE,  # Optional: captures the standard output
-                stderr=subprocess.PIPE,  # Optional: captures the error output
-                text=True  # Optional: ensures the output is treated as a string
+                stdout=subprocess.PIPE,  # Cattura output 
+                stderr=subprocess.PIPE,  # Cattura errore output
+                text=True  
             )
 
          

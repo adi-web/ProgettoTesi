@@ -104,7 +104,7 @@ class TransformCoordinates:
                 for jj in range(xyz.shape[0]):
                     xyz[jj, :] = xyz[jj, :] + self.origin_sensors_global[:, ii]
                 
-                # 
+                
                 transformed_data = pd.DataFrame(xyz, columns=['x', 'y', 'z'])
                 combined_data = pd.concat([csvData.drop(columns=['x', 'y', 'z']), transformed_data], axis=1)
                 combined_data.to_csv(os.path.join(self.basePatht, f"sensor_{ii}_{kk}.csv"), index=False)
