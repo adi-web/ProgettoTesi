@@ -32,9 +32,9 @@ class TransformCoordinates:
      
         self.numberSensor = self.sensor_number()
         self.p=p
-        # Get all CSV files in the base path
+        # prende tutti i file csv
         csv_files = glob.glob(os.path.join(self.basePath, "*.csv"))
-        #print(f"Number of CSV files: {len(csv_files)}")
+  
         self.numberFile=len(csv_files)
         self.numberScan = round(len(csv_files) / self.numberSensor)
 
@@ -54,11 +54,10 @@ class TransformCoordinates:
 
 
         else:    
-            # Read sensor data from a CSV file
+            # ricava indice scansione
             number = self.split[len(self.split)-3].split("_")
         
-            #path_sensor=r'raccolta_scenari/'+self.split[len(self.split)-4]+"/"+self.split[len(self.split)-3]+"/sensor_scenario_"+number[len(number)-1]
-            #glob.glob(os.path.join(self.basePath, "*.csv"))
+           
             path_sensor = os.path.join(
                 'raccolta_scenari', 
                 self.split[len(self.split)-4], 
@@ -67,13 +66,13 @@ class TransformCoordinates:
             )
         
         self.sensorFile = pd.read_csv(os.path.join(os.getcwd(),path_sensor))
-        # Extract x, y, z columns as a NumPy array
+       
         self.matrix_sensor = self.sensorFile[['x', 'y', 'z']].to_numpy().T  # Transpose for a 3xN matrix
     
         return len(self.sensorFile) 
 
     def center_sensor(self):
-        # Calculate the center of sensors (x, y mean; z is set to 0)
+        # Calcola il centro di simulazione
         self.sensorCenter = np.array([
             self.sensorFile['x'].mean(),
             self.sensorFile['y'].mean(),
@@ -82,37 +81,36 @@ class TransformCoordinates:
     
 
     def set_global_sensor(self):
-        # Calculate the offset of each sensor relative to the center
+        # Calcola lo scostamento
         for ss in range(self.matrix_sensor.shape[1]):
             self.origin_sensors_global[:, ss] = self.matrix_sensor[:, ss] - self.sensorCenter
         
 
     def transform_coordinates(self):
-        #print("Starting coordinate transformation...")
+
         i=50/self.numberFile
-        #print(i)
+      
         for kk in range(self.numberScan):
 
             for ii in range(self.numberSensor):
-                # Construct the CSV file path
+                
                 csvFilePath = os.path.join(self.basePath, f"sensor_{ii}_{kk}.csv")
                 
-                # Read the current CSV file
+                # legge i file dal path costruito
                 csvData = pd.read_csv(csvFilePath)
                 xyz = csvData[['x', 'y', 'z']].to_numpy()
                 
-                # Transform each point's coordinates
+                # trasforma le coordinate
                 for jj in range(xyz.shape[0]):
                     xyz[jj, :] = xyz[jj, :] + self.origin_sensors_global[:, ii]
                 
-                # (Optional) Write the transformed data back to CSV if needed
+                # 
                 transformed_data = pd.DataFrame(xyz, columns=['x', 'y', 'z'])
                 combined_data = pd.concat([csvData.drop(columns=['x', 'y', 'z']), transformed_data], axis=1)
                 combined_data.to_csv(os.path.join(self.basePatht, f"sensor_{ii}_{kk}.csv"), index=False)
                 self.p.signal_accept(i)
             
-        #print("Transformation complete.")
-        #print("Example Transformed Coordinates:\n", xyz)
+        
 
 if __name__ == '__main__':
     TransformCoordinates()
