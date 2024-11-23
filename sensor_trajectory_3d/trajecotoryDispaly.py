@@ -295,8 +295,11 @@ class View_Trajectory(QMainWindow):
                 self.trajectory_data["scenario_id"]=self.scenario_id+"_"+str(self.file_count)
                 self.trajectory_data.to_csv(self.pathTrajectory, index=False)
         else:
+            self.name_sensor=[os.path.join(self.scenario_path, self.scenario_id+"_"+str(self.file_count)),str(self.file_count)]
             self.pathTrajectory=os.path.join(self.scenario_path, self.scenario_id+"_"+str(self.file_count),
                                              "scenario"+"_"+str(self.file_count)+".csv")
+            
+            
 
 
 
@@ -424,8 +427,8 @@ class View_Trajectory(QMainWindow):
             self.valorecary=abs(abs(ycar[0])-abs(ycar[1]))/200
 
         self.firstEnter=False
-            
-        self.addCarTrajectoryExist()
+        if self.trajectoryExist:    
+            self.addCarTrajectoryExist()
 
         
 
@@ -444,6 +447,9 @@ class View_Trajectory(QMainWindow):
                         self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[trajectory["x"][0]-self.valorecarx,trajectory["x"][0]+self.valorecarx,trajectory["y"][0]-self.valorecary,trajectory["y"][0]+self.valorecary],label=random.random() ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
                 else:
                     break
+         self.trajectory_data["object_type"] = "None"
+
+
 
     def center_simulation(self,trajectory_data):
         center_traj=trajectory_data[["x", "y"]].mean().values
