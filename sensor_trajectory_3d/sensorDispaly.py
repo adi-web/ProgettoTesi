@@ -4,6 +4,7 @@ from PIL import Image
 from PyQt5 import QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.backend_bases import MouseEvent    
+from matplotlib.transforms import Affine2D
 import numpy as np
 import pandas as pd
 from PyQt5.QtCore import QPoint,Qt
@@ -186,19 +187,31 @@ class Sensor_controller(QtWidgets.QWidget):
         
 
         sensor_icon = sensor_icon.rotate(z)
-        self.s=self.ax.imshow(sensor_icon, extent=[x-self.view_trajectory.valorecarx,x+self.view_trajectory.valorecarx,y-self.view_trajectory.valorecary,y+self.view_trajectory.valorecary],picker=True, aspect='auto', zorder=15)
+        self.s=self.ax.imshow(sensor_icon, extent=[x-self.view_trajectory.valorecarx-0.1,x+self.view_trajectory.valorecarx+0.1,y-self.view_trajectory.valorecary-0.1,y+self.view_trajectory.valorecary+0.1],picker=True, aspect='auto', zorder=15)
         #self.ax.text(z,y,str(1),color="white")
         
         self.s.label =  str(index)
         self.ax.autoscale(False)
-  
+
+        # Definisci un'affine trasformation (identity) per mantenere dimensione fissa
+        identity_transform = Affine2D()
+
+        # Usa un sistema di coordinate dei dati ma con una trasformazione che non cambia la dimensione del testo
+        text=self.ax.text(x-0.05, y-0.001, f" {index}",
+                    color="white", fontsize=8, ha="center", va="center", 
+                    zorder=16, transform=self.ax.transData + identity_transform)
+
+
+
         self.ax.autoscale(False)    
 
         
         self.data_pd["name"].append(self.s.label)
         #self.s.angle = 0
+        
         self.sensor_list.append(self.s)
-        #6sen   self.sensor_text[self.s.label]=text
+
+        self.sensor_text[self.s.label]=text
         
         self.save_data_to_csv()
 
@@ -227,6 +240,7 @@ class Sensor_controller(QtWidgets.QWidget):
             
             # dati dove si è clickato per aggiungere il sensore
             xdata, ydata = event.xdata, event.ydata
+            
             
             self.add_new_sensor(xdata,ydata,5,len(self.sensor_list)+1,self.sensor_icon)
 
@@ -331,11 +345,15 @@ class Sensor_controller(QtWidgets.QWidget):
         if self.selected_sensor is not None and self.initial_tool.modify_sensorIcon.isChecked():
     
             xdata, ydata = event.xdata, event.ydata
-            new_extent = [xdata - self.view_trajectory.valorecarx, xdata +self.view_trajectory.valorecarx,
-                          ydata -self.view_trajectory.valorecary, ydata + self.view_trajectory.valorecary]
+            new_extent = [xdata - self.view_trajectory.valorecarx-0.1, xdata +self.view_trajectory.valorecarx+0.1,
+                          ydata -self.view_trajectory.valorecary-0.1, ydata + self.view_trajectory.valorecary+0.1]
 
             # Aggiorna posizione solo il sensore selezionato
             self.selected_sensor.set_extent(new_extent)
+
+            self.sensor_text[self.selected_sensor.label].set_x(xdata-0.005)
+            self.sensor_text[self.selected_sensor.label].set_y(ydata)
+
 
     
 

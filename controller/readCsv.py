@@ -73,7 +73,7 @@ class read_csv(QMainWindow):
         self.layout = QVBoxLayout()
         self.central_widget.setLayout(self.layout)
         
-        self.browse_button = QPushButton("Scegli file")
+        self.browse_button = QPushButton("Choose Trajectory")
         self.browse_button.clicked.connect(self.open_file)
         self.layout.addWidget(self.browse_button)
 

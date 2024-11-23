@@ -30,11 +30,11 @@ class initial_tool(QMainWindow):
         #lista che divide funzionalità sensori e veicolo
         self.list_widget={"sensor":[],"vehicles":[]}
         
-
-        sensor_icon=QAction(QIcon('./assets/addfile.png'), '&New', self)
-        sensor_icon.setIconText("Import Sensor")
-        sensor_icon.triggered.connect( self.sensorController.sensor_import)
-        self.list_widget["sensor"].append(sensor_icon)
+        # permette di sceglier un file sensori e importare sensori
+        #sensor_icon=QAction(QIcon('./assets/addfile.png'), '&New', self)
+        #sensor_icon.setIconText("Import Sensor")
+        #sensor_icon.triggered.connect( self.sensorController.sensor_import)
+        #self.list_widget["sensor"].append(sensor_icon)
 
         self.new_sensorIcon=QAction(QIcon('./assets/add.png'), '&addSensor', self)
         self.new_sensorIcon.setIconText("Add new sensor")
@@ -70,13 +70,14 @@ class initial_tool(QMainWindow):
 
         self.vehicle_list=[]
 
-        self.import_vehicle=QAction(QIcon('./assets/addfile.png'), '&importVehicle', self)
-        self.import_vehicle.setIconText("import vehicle")
-        self.import_vehicle.triggered.connect(lambda: self.view_trajectory.vehicle_controller(self.import_vehicle))
-        self.import_vehicle.setCheckable(True)  # 
-        self.import_vehicle.setChecked(False)
-        self.list_widget["vehicles"].append(self.import_vehicle)
-        self.vehicle_list.append(self.import_vehicle)
+        # permette di importare veicoli nelle traiettorie
+        #self.import_vehicle=QAction(QIcon('./assets/addfile.png'), '&importVehicle', self)
+        #self.import_vehicle.setIconText("import vehicle")
+        #self.import_vehicle.triggered.connect(lambda: self.view_trajectory.vehicle_controller(self.import_vehicle))
+        #self.import_vehicle.setCheckable(True)  # 
+        #self.import_vehicle.setChecked(False)
+        #self.list_widget["vehicles"].append(self.import_vehicle)
+        #self.vehicle_list.append(self.import_vehicle)
 
         self.veicle_icon=QAction(QIcon('./assets/vehicle.png'), 'vehicle', self)
         self.veicle_icon.setIconText("Set veicle")
@@ -120,7 +121,7 @@ class initial_tool(QMainWindow):
   
    
     def prova(self):
-        print("dentro prova")
+    
         setting_sensor2=Setting_Sensor()
         self.view_trajectory.setting_sensor.addWidget(setting_sensor2)
         self.view_trajectory.update_window()
@@ -172,25 +173,33 @@ class MenuTop(QMainWindow):
      
         
         
-        settings = menu.addMenu("&setting")
-        settings_scene = menu.addMenu("&setting scene")
+        settings = menu.addMenu("&Scene Settings")
+        settings_scene = menu.addMenu("&Road Options")
+
+
+        
        
 
-        add_car = QAction(QIcon("./assets/start.png"), "Insert Car", self)
-        add_car.setStatusTip("Open Trajesctory")
+        add_car = QAction(QIcon("./assets/start.png"), "Insert Icon Car", self)
+        add_car.setStatusTip("insert car")
         add_car.triggered.connect(self.insert_car)
 
         insert_campionamento = QAction(QIcon("./assets/start.png"), "Set Campionamento", self)
         insert_campionamento.setStatusTip("Set campionamento")
         insert_campionamento.triggered.connect(self.set_campionamento)
 
-        set_center = QAction(QIcon("./assets/start.png"), "Center Simulation", self)
+        set_center = QAction(QIcon("./assets/start.png"), "Set Center Simulation", self)
         set_center.triggered.connect(self.dialog_center)
-        set_center.setStatusTip("Open Trajesctory")
+        set_center.setStatusTip("center simulation")
 
-        self.filter_paviment = QAction( "Filter Paviment",self,checkable=True)
-        self.filter_paviment.setChecked(False)
-        self.filter_paviment.setStatusTip("Filter Paviment")
+
+        back = QAction(QIcon("./assets/start.png"), "New Trajectory", self)
+        back.triggered.connect(lambda: self.trjaectory.goBack())
+        back.setStatusTip("go back")
+
+        #self.filter_paviment = QAction( "Filter Paviment",self,checkable=True)
+        #self.filter_paviment.setChecked(False)
+        #self.filter_paviment.setStatusTip("Filter Paviment")
         #self.filter_paviment.triggered.connect(self.filter_paviment_active)
        
 
@@ -200,7 +209,8 @@ class MenuTop(QMainWindow):
         settings.addSeparator()
         settings.addAction(insert_campionamento) 
         settings.addSeparator()
-        settings.addAction(self.filter_paviment) 
+        settings.addAction(back) 
+        #settings.addAction(self.filter_paviment) 
 
 
         self.insert_min_distance = QAction(QIcon("./assets/start.png"), "Set min length road", self)
@@ -239,7 +249,7 @@ class MenuTop(QMainWindow):
         self.campionameno_dialog=QDialog(self)
         self.campionameno_dialog.setFixedHeight(200)
         self.campionameno_dialog.setFixedWidth(300)
-        self.campionameno_dialog.setWindowTitle("Campionamento")
+        self.campionameno_dialog.setWindowTitle("Sampling")
         form_layout = QFormLayout()
 
         self.c = QDoubleSpinBox()
@@ -247,7 +257,7 @@ class MenuTop(QMainWindow):
         self.c.setValue(self.campionamento.value())
 
        
-        form_layout.addRow("Campionamento:", self.c)
+        form_layout.addRow("Sampling:", self.c)
         dialog_layout = QVBoxLayout()
         button_save=QPushButton("Save")
         button_save.clicked.connect(self.save_campionamento)
@@ -271,9 +281,9 @@ class MenuTop(QMainWindow):
         self.center_dialog=QDialog(self)
         self.center_dialog.setFixedHeight(200)
         self.center_dialog.setFixedWidth(300)
-        self.center_dialog.setWindowTitle("Lughezza min strada")
+        self.center_dialog.setWindowTitle("Road length ")
 
-        center=QLabel("Lunghezza strada: ")
+        center=QLabel("Road length: ")
         form_layout = QFormLayout()
         self.lenRoad = QDoubleSpinBox()
         
@@ -281,7 +291,7 @@ class MenuTop(QMainWindow):
         orizontal = QHBoxLayout()
 
         self.lenRoad.setRange(-100.0, 1000.0)
-        form_layout.addRow("Inserisci lunghezza:", self.lenRoad)
+        form_layout.addRow("Set length:", self.lenRoad)
 
         orizontal.addLayout(form_layout)
 

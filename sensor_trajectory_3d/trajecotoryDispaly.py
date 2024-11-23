@@ -226,6 +226,7 @@ class View_Trajectory(QMainWindow):
     # open3d è istanza della classe startApplicatio utilizzato per avviare open3d
     #page5 istanza che permette di fare trasformate csv->ply
     def displayTrajectory(self,trajectory_data,open3d,page5):
+        self.ax.clear()
 
         self.open3d=open3d
         self.page5=page5
@@ -309,10 +310,6 @@ class View_Trajectory(QMainWindow):
 
     def filter_road(self,lenRoad,trajectory):
 
-        #♣self.ax.clear()
-        
-       
-
         #permette di visualizzare le strade non reali
         if not self.menuTool.road_prediction.isChecked():
              self.trajectory_data2 = self.trajectory_data[self.trajectory_data['observed']==True]
@@ -348,6 +345,8 @@ class View_Trajectory(QMainWindow):
         self.white_line=[]
         self.trajectory_means=[]
         self_list_pd=[]
+
+        self.annotation={}
       
         # ciclo per ogni traiettoria
         for label in self.data_to_plot:
@@ -369,15 +368,14 @@ class View_Trajectory(QMainWindow):
                 if distancex!=0 and distancey!=0 and distance>lenRoad:
                     self.line, =self.ax.plot(trajectory["x"], trajectory["y"],label=trajectory["label"][0],linewidth=self.valoreZoom, color='grey', solid_capstyle='projecting', picker=True,zorder=10)
                     
-                    if self.trajectoryExist==False:
-        
+                    
                         #aggiunge freccia all'inizio della strada
-                        self.ax.annotate(
-                        "",
-                        xy=(trajectory["x"][3], trajectory["y"][3]),  
-                        xytext=(trajectory["x"][0], trajectory["y"][0]),zorder=29, 
-                        arrowprops=dict(arrowstyle='->', color='red', lw=1)
-                            )  
+                    annotation=self.ax.annotate("", 
+                                                    xy=(trajectory["x"][3], trajectory["y"][3]),  
+                                                    xytext=(trajectory["x"][0], trajectory["y"][0]),
+                                                    zorder=29,
+                                                    arrowprops=dict(arrowstyle='-', color='red', lw=1))
+                    self.annotation[str(trajectory["label"][0])]=annotation
 
                     #aggiunge strisce trattegiate   
                     self.white_line, =self.ax.plot(trajectory["x"], trajectory["y"], linestyle='--', color='white', linewidth=0.7, dash_capstyle='round',zorder=20)
@@ -399,9 +397,9 @@ class View_Trajectory(QMainWindow):
                     #self.sensor_vehicle.append(self.ax.imshow(sensor_icon, extent=[trajectory["x"][0]-1.3,trajectory["x"][0]+1.3,trajectory["y"][1]-1.3,trajectory["y"][1]+1.3], label=trajectory["label"][0],interpolation='antialiased',picker=False,aspect="auto",zorder=20))
                     
                     #pass
-                else:
-                    l=trajectory["label"][0]
-                    trajectory = trajectory[trajectory['label'] != l]
+               # else:
+                #    l=trajectory["label"][0]
+                 #   trajectory = trajectory[trajectory['label'] != l]
         
 
                 
@@ -423,8 +421,10 @@ class View_Trajectory(QMainWindow):
             #valori per definire dimensione veicolo 
             xcar = self.ax.get_xlim()
             ycar=self.ax.get_ylim()
-            self.valorecarx=abs(abs(xcar[0])-abs(xcar[1]))/200
-            self.valorecary=abs(abs(ycar[0])-abs(ycar[1]))/200
+            self.valorecarx=(abs(abs(xcar[0])-abs(xcar[1]))/200)+0.1
+            self.valorecary=(abs(abs(ycar[0])-abs(ycar[1]))/200)+0.1
+
+           
 
         self.firstEnter=False
         if self.trajectoryExist:    
@@ -437,14 +437,21 @@ class View_Trajectory(QMainWindow):
         self.canavas.draw()
 
     def addCarTrajectoryExist(self):
+         # per ogni traiettoria avendo un veicolo viene rappresentato
          for label in self.data_to_plot:
                 trajectory = self.data_to_plot[label]
+
                 if self.trajectoryExist:
                         car_icon = Image.open(f'./assets/{trajectory["object_type"][0]}.png')
                         heading_degrees = math.degrees(trajectory["heading"][0])
-                        car_icon=car_icon.rotate(heading_degrees)
+                        car_icon=car_icon.rotate(heading_degrees,expand=True)
+
                         self.ax.autoscale(False)
-                        self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[trajectory["x"][0]-self.valorecarx,trajectory["x"][0]+self.valorecarx,trajectory["y"][0]-self.valorecary,trajectory["y"][0]+self.valorecary],label=random.random() ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
+
+                        # annotazione dove viene posizionato il veicolo viene disattivata
+                        self.annotation[str(trajectory["label"][0])].set_visible(False)
+
+                        self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[trajectory["x"][0]-self.valorecarx,trajectory["x"][0]+self.valorecarx,trajectory["y"][0]-self.valorecary,trajectory["y"][0]+self.valorecary],label=trajectory["label"][0] ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
                 else:
                     break
          self.trajectory_data["object_type"] = "None"
@@ -468,7 +475,8 @@ class View_Trajectory(QMainWindow):
            
 
         return filter_result     
-    
+
+   
 
     #funzione che aggiunge o rimuove veicolo ad una traiettoria
     def vehicleTrajectory(self,event):
@@ -478,44 +486,26 @@ class View_Trajectory(QMainWindow):
             
             car_icon = Image.open('./assets/'+self.vehicle_choose.text()+'.png')
 
-            print(self.df['heading'])
-
-            print(self.df.columns)
-            print(self.df['label'] == 147036) 
-
-  
-
-            print(event.artist.get_label())
-           # print(self.df)
+            # disattiva l'annotazione di inizio traiettoria
+            self.annotation[event.artist.get_label()].set_visible(False)
+       
             self.df['label'] = self.df['label'].astype(str)
 
+            # angolo per posizionare il veicolo
             angle= self.df['heading'].loc[self.df['label'] == event.artist.get_label()]
-
-            print()
-            
-            print("angle")
-            print(angle)
-        
       
             heading_degrees = math.degrees(angle[0])
             
-            car_icon=car_icon.rotate(heading_degrees,expand=True)
+            # img ruotata in base al angolo
+            car_icon=car_icon.rotate((heading_degrees),expand=True)
 
             self.ax.autoscale(False)
-           
-            self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[event.artist.get_xydata()[0][0]-self.valorecarx,event.artist.get_xydata()[0][0]+self.valorecarx,event.artist.get_xydata()[0][1]-self.valorecary,event.artist.get_xydata()[0][1]+self.valorecary],label=random.random() ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
+
+            # mostra veicolo nella traiettoria
+            self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[event.artist.get_xydata()[0][0]-self.valorecarx,event.artist.get_xydata()[0][0]+self.valorecarx,event.artist.get_xydata()[0][1]-self.valorecary,event.artist.get_xydata()[0][1]+self.valorecary],label=str(event.artist.get_label()) ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
             self.df.loc[self.df['label'] == event.artist.get_label(), "object_type"] = self.vehicle_choose.text()
-      
-           
-                
 
-            #if os.path.exists(os.path.join(self.scenario_path, f"{self.scenario_id}.csv")):
-             #   self.df.to_csv(os.path.join(self.scenario_path, self.scenario_id+".csv"), index=False)    
-
-            #else:
-               # self.df.to_csv(self.pathTrajectory, index=False)
-
-
+            # salva veicolo nel file
             self.save_csv_sample()
             
             self.canavas.draw()
@@ -524,21 +514,17 @@ class View_Trajectory(QMainWindow):
         if event.artist in self.sensor_vehicle and self.initialTool.remove_vehicle.isChecked():
 
             #self.trajectory_data=self.trajectory_data.loc[self.trajectory_data['label'] != event.artist.get_label()]
-
-            
-
             #self.trajectory_data.to_csv(self.pathTrajectory, index=False)  
-
+            print(self.annotation)
+            self.annotation[event.artist.get_label()].set_visible(True)
+            print(event.artist.get_label())
             self.trajectory_data=self.trajectory_data.loc[self.trajectory_data['label'] != event.artist.get_label()]
             self.trajectory_data["object_type"] = "None"
-            self.trajectory_data.to_csv(self.pathTrajectory, index=False) 
+            self.df.loc[self.df['label'] == event.artist.get_label(), "object_type"] = "None"
 
-            #self.trajectory_data.loc[self.trajectory_data['label'] == event.artist.get_label(), 'object_type'] = "None"
-            #self.df=self.df.loc[self.df['label'] != event.artist.get_label()]
-
-
-            #self.save_csv_sample()
-
+            #self.trajectory_data.to_csv(self.pathTrajectory, index=False) 
+            
+            self.save_csv_sample()
             event.artist.remove()
             self.canavas.draw()
     
@@ -670,6 +656,8 @@ class View_Trajectory(QMainWindow):
         self.open3d.stackedWidget.setCurrentIndex(4)
         self.page5.callFromtrajectory(self.pathBase)
 
+    def goBack(self):
+        self.open3d.stackedWidget.setCurrentIndex(1)
 
           
 

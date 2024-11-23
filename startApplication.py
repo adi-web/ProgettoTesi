@@ -22,6 +22,8 @@ class MainWindow(QWidget):
 
 
         self.stackedWidget = QStackedWidget()
+        self.setWindowIcon(QIcon("./assets/blender.png"))
+        
 
         #pagina iniziale
         self.page1 = StartWindow()
@@ -81,6 +83,8 @@ class MainWindow(QWidget):
         if self.file_name:
             self.stackedWidget.setCurrentIndex(3)
             self.page4.start(self.file_name)
+            
+            
         
 
     def show_csv_choose(self):
@@ -130,7 +134,8 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.setGeometry(500,100,1200,800)
-    window.setWindowTitle('Blender Simulazioni')
+    window.setWindowTitle('Simulation Blender')
+    
     window.show()
     sys.exit(app.exec_())
 

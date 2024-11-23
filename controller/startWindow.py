@@ -1,6 +1,7 @@
 import sys
 from PyQt5 import QtCore, QtWidgets
 from controller.readCsv import *
+from PyQt5.QtGui import QIcon
 
 
 
@@ -18,7 +19,7 @@ class StartWindow(QtWidgets.QWidget):
         
         layout = QVBoxLayout()
 
-        self.button = QtWidgets.QPushButton('Create simulation')
+        self.button = QtWidgets.QPushButton('Create scenario')
         
         self.button.setFixedWidth(1000)
        

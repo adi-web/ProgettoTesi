@@ -258,6 +258,8 @@ class view3D(QMainWindow):
         layout = QGridLayout(widget)
         self.setCentralWidget(widget)
 
+        self.toolOpen=toolOpen3d(self)
+
        
         self.vis = o3d.visualization.Visualizer()
         self.vis.create_window(window_name="Open3D", visible=False)
@@ -271,7 +273,8 @@ class view3D(QMainWindow):
         
         
         
-        self.toolOpen=toolOpen3d(self)
+        
+       
 
         layout.addWidget(self.toolOpen)
         layout.addWidget(self.windowcontainer)
@@ -291,7 +294,7 @@ class view3D(QMainWindow):
        
         
         # queue che serve per leggere i point cloud e renderizzarli
-        self.queue =multiprocessing.Queue()   
+        self.queue=None 
         self.worker_process=None
 
         # controllo se stiamo facendo prima lettura di file ply o dobbiamo renderizzare simulazione vecchia    
@@ -299,6 +302,8 @@ class view3D(QMainWindow):
 
              # numero di scansioni fatte da un unico sensore ( non tutte le scansioni )
             self.numebrScan=round(len(self.ply_files)/len(self.sensorFile))
+
+            self.queue =multiprocessing.Queue()  
             
             self.worker_process = multiprocessing.Process(target=worker_function, args=(self.ply_files, self.basePath, self.sensorFile,self.numebrScan, self.queue))
 
@@ -345,6 +350,7 @@ class view3D(QMainWindow):
             self.view_sensor.append(k)
             self.list_step_sensor[k]=[]
 
+        self.show()
 
    # funzione che manda nella pagina principale dell'applicativo
     def goback(self):
@@ -363,19 +369,6 @@ class view3D(QMainWindow):
         self.vis.destroy_window()  
         self.vis = None        
    
-
-    def costruction_surface(self,i):
-        
-        ply_directory = r"e:\universita\tesi\ply"
-
-
-        ply_files = sorted([f for f in os.listdir(ply_directory) if f.endswith('.ply')])
-
-    
-        self.vis.clear_geometries() 
-        self.openFile(ply_files,ply_directory,i)
-        self.executor.submit(self.openFile(ply_files,ply_directory,i))
-    
     
 
     def check_queue(self):
@@ -392,8 +385,8 @@ class view3D(QMainWindow):
         self.vis.poll_events()
         self.vis.update_renderer()
           
-    #def start_processing(self):
-      #  print("")
+    def start_processing(self):
+        print("")
 
     # funzione che permette di animare la simulazione
     def update_visulization(self):
@@ -491,8 +484,6 @@ class view3D(QMainWindow):
     # salva i point cloud ricevuti dal processor
     def save_geometry(self, geometries):
 
-    
-
         for key in geometries:
             
             pcd = o3d.geometry.PointCloud()
@@ -504,12 +495,6 @@ class view3D(QMainWindow):
 
         # permette di aumentar lo slider
         self.toolOpen.slider.setMaximum(self.i-1)   
-
-    
-    #def update_vis(self):# metodo chiamat ogni secondo dal timer
-        
-      
-     #   self.start_processing()# comincia il prcesso
 
         
 
@@ -540,15 +525,5 @@ class view3D(QMainWindow):
         return super(view3D, self).eventFilter(source, event)
  
     
-if __name__ == '__main__':
-
-    app = QtWidgets.QApplication(sys.argv)
-    form = view3D()
-    form.setWindowTitle('o3d Embed')
-  
-    form.show()
-    sys.exit(app.exec_())
-
-
 
 
