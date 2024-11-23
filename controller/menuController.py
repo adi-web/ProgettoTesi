@@ -207,10 +207,10 @@ class MenuTop(QMainWindow):
         self.insert_min_distance.setStatusTip("Set min road")
         self.insert_min_distance.triggered.connect(self.dialog_set_min_road)
 
-        self.vehicle_satic = QAction( "Vehicle static",self,checkable=True)
-        self.vehicle_satic.setChecked(False)
-        self.vehicle_satic.setStatusTip("Filter Paviment")
-        self.vehicle_satic.triggered.connect(self.show_static_vehicle)
+        #self.vehicle_satic = QAction( "Vehicle static",self,checkable=True)
+        #self.vehicle_satic.setChecked(False)
+        #self.vehicle_satic.setStatusTip("Filter Paviment")
+        #self.vehicle_satic.triggered.connect(self.show_static_vehicle)
 
         self.road_prediction = QAction( "Show road prediction",self,checkable=True)
         self.road_prediction.setChecked(True)
@@ -219,7 +219,7 @@ class MenuTop(QMainWindow):
 
 
         settings_scene.addAction(self.insert_min_distance)
-        settings_scene.addAction(self.vehicle_satic)
+#        settings_scene.addAction(self.vehicle_satic)
         settings_scene.addAction(self.road_prediction)
      
 
@@ -230,8 +230,8 @@ class MenuTop(QMainWindow):
         self.trjaectory.filter_road(15,self.trjaectory.trajectory_data)  
 
     #per mostrare i veicoli statici     
-    def show_static_vehicle(self):
-        self.trjaectory.filter_road(20,self.trjaectory.trajectory_data)
+    #def show_static_vehicle(self):
+        #self.trjaectory.filter_road(20,self.trjaectory.trajectory_data)
         
 
    

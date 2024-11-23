@@ -77,7 +77,10 @@ class View_Trajectory(QMainWindow):
         self.verticale.addLayout(self.layout_or)
         
     
-        
+        self.lines=[]
+        self.whites=[]
+        self.firstEnter=True
+        self.sensor_vehicle=[]
         
         #variabile di controllo per update_window
         self.enter=False
@@ -228,20 +231,39 @@ class View_Trajectory(QMainWindow):
         self.page5=page5
 
         self.trajectory_data=trajectory_data
-        #elimina tutte le traiettorie che non sono di veicoli
-        self.trajectory_data = self.trajectory_data[self.trajectory_data['object_type']=="vehicle"]
+
         
-        self.trajectory_data["object_type"] = "None"
-
-      
-
         self.scenario_id = str(self.trajectory_data['scenario_id'][0])  
-        self.scenario_id = self.scenario_id.replace("-", "_")
+        scenario_id_new=self.scenario_id.split("_")
+        if len(scenario_id_new)!=1:
 
-        self.createPath()
+            #path in base all'id scenario
+            self.scenario_id =self.scenario_id[:-2]
+            self.file_count=scenario_id_new[len(scenario_id_new)-1]
+            self.trajectoryExist=True
+            
+            self.createPath()
+
+
+            self.filter_road(20, self.trajectory_data)
+
+            
+
+
+        else:    
+            #elimina tutte le traiettorie che non sono di veicoli
+            self.trajectory_data = self.trajectory_data[self.trajectory_data['object_type']=="vehicle"]
+            
+            self.trajectory_data["object_type"] = "None"
 
         
-        self.filter_road(20, self.trajectory_data)
+
+            self.scenario_id = self.scenario_id.replace("-", "_")
+            self.trajectoryExist=False
+            self.createPath()
+
+            
+            self.filter_road(20, self.trajectory_data)
 
        
        
@@ -253,11 +275,12 @@ class View_Trajectory(QMainWindow):
         
 
         if not os.path.exists(self.scenario_path):
-                os.makedirs(self.scenario_path)
-
-        #self.file_count = len(glob.glob(os.path.join(self.scenario_path, "*.csv")))
-        self.file_count=sum(os.path.isdir(os.path.join(self.scenario_path, item)) for item in os.listdir(self.scenario_path))
-
+            os.makedirs(self.scenario_path)
+            
+        if self.trajectoryExist==False: 
+            # conta il numero di dir per assegnare un nuovo indice al dir nuovo di un determinato scenario
+            self.file_count=sum(os.path.isdir(os.path.join(self.scenario_path, item)) for item in os.listdir(self.scenario_path))
+                   
 
         if not os.path.exists(os.path.join(self.scenario_path, self.scenario_id+"_"+str(self.file_count))): 
                 self.name_sensor=self.scenario_id+"_"+str(self.file_count)
@@ -271,34 +294,62 @@ class View_Trajectory(QMainWindow):
 
                 self.trajectory_data["scenario_id"]=self.scenario_id+"_"+str(self.file_count)
                 self.trajectory_data.to_csv(self.pathTrajectory, index=False)
+        else:
+            self.pathTrajectory=os.path.join(self.scenario_path, self.scenario_id+"_"+str(self.file_count),
+                                             "scenario"+"_"+str(self.file_count)+".csv")
 
+
+
+
+
+    
 
     def filter_road(self,lenRoad,trajectory):
 
-        self.ax.clear()
-        self.enterS=False
+        #♣self.ax.clear()
+        
        
 
         #permette di visualizzare le strade non reali
         if not self.menuTool.road_prediction.isChecked():
              self.trajectory_data2 = self.trajectory_data[self.trajectory_data['observed']==True]
+             for line in self.lines:
+                 line.remove()
+                 self.lines.remove(line)
+                 
+             for whiteLine in self.whites:
+                    whiteLine.remove()
+                    self.whites.remove(whiteLine)
+             self.canavas.draw()       
+             
         else:
+            if len(self.lines) != 0:
+                self.ax.autoscale_view()
+                for line in self.lines:
+                    line.remove()
+                    self.lines.remove(line)
+                for whiteLine in self.whites:
+                    whiteLine.remove()
+                    self.whites.remove(whiteLine)
+                self.canavas.draw()    
+            else:
+                self.valoreZoom=8            
             self.trajectory_data2=self.trajectory_data
 
 
-        data_to_plot=self.getIdTrajectory(self.trajectory_data2)
+        self.data_to_plot=self.getIdTrajectory(self.trajectory_data2)
 
-        self.lines=[]
-        self.sensor_vehicle=[]
+        
+        
         self.vehicle_put=[]
         self.white_line=[]
         self.trajectory_means=[]
         self_list_pd=[]
       
         # ciclo per ogni traiettoria
-        for label in data_to_plot:
+        for label in self.data_to_plot:
             
-                trajectory = data_to_plot[label]
+                trajectory = self.data_to_plot[label]
            
                 #utilizzato per calcolare il centro di simulazione
                 self.trajectory_means.append(self.center_simulation(trajectory))
@@ -313,33 +364,38 @@ class View_Trajectory(QMainWindow):
                 #distanza calcolata per filtrare in base alla lunghezza della strada
                 distance = math.sqrt(distancex**2 + distancey**2)
                 if distancex!=0 and distancey!=0 and distance>lenRoad:
-                    self.line, =self.ax.plot(trajectory["x"], trajectory["y"],label=trajectory["label"][0],linewidth=8, color='grey', solid_capstyle='projecting', picker=True,zorder=10)
+                    self.line, =self.ax.plot(trajectory["x"], trajectory["y"],label=trajectory["label"][0],linewidth=self.valoreZoom, color='grey', solid_capstyle='projecting', picker=True,zorder=10)
                     
-                    #aggiunge freccia all'inizio della strada
-                    self.ax.annotate(
-                    "",
-                    xy=(trajectory["x"][3], trajectory["y"][3]),  
-                    xytext=(trajectory["x"][0], trajectory["y"][0]),zorder=29, 
-                    arrowprops=dict(arrowstyle='->', color='red', lw=1)
-                        )  
+                    if self.trajectoryExist==False:
+        
+                        #aggiunge freccia all'inizio della strada
+                        self.ax.annotate(
+                        "",
+                        xy=(trajectory["x"][3], trajectory["y"][3]),  
+                        xytext=(trajectory["x"][0], trajectory["y"][0]),zorder=29, 
+                        arrowprops=dict(arrowstyle='->', color='red', lw=1)
+                            )  
 
                     #aggiunge strisce trattegiate   
-                    self.white_line.append(self.ax.plot(trajectory["x"], trajectory["y"], linestyle='--', color='white', linewidth=0.7, dash_capstyle='round',zorder=20))
+                    self.white_line, =self.ax.plot(trajectory["x"], trajectory["y"], linestyle='--', color='white', linewidth=0.7, dash_capstyle='round',zorder=20)
                     
+
+
                     #salvo traiettoria letta
                     self.lines.append(self.line)
+                    self.whites.append(self.white_line)
 
                     #caso di veicoli fermi
-                elif distance<1 and self.menuTool.vehicle_satic.isChecked():    
+                #elif distance<1 and self.menuTool.vehicle_satic.isChecked():    
                    
-                    sensor_icon = Image.open('./assets/vehicle.png')
-                    heading_degrees = math.degrees(trajectory["heading"][0])
+                 #   sensor_icon = Image.open('./assets/vehicle.png')
+                  #  heading_degrees = math.degrees(trajectory["heading"][0])
 
-                    sensor_icon=sensor_icon.rotate(heading_degrees)
+                   # sensor_icon=sensor_icon.rotate(heading_degrees)
     
-                    self.sensor_vehicle.append(self.ax.imshow(sensor_icon, extent=[trajectory["x"][0]-1.3,trajectory["x"][0]+1.3,trajectory["y"][1]-1.3,trajectory["y"][1]+1.3], label=trajectory["label"][0],interpolation='antialiased',picker=False,aspect="auto",zorder=20))
+                    #self.sensor_vehicle.append(self.ax.imshow(sensor_icon, extent=[trajectory["x"][0]-1.3,trajectory["x"][0]+1.3,trajectory["y"][1]-1.3,trajectory["y"][1]+1.3], label=trajectory["label"][0],interpolation='antialiased',picker=False,aspect="auto",zorder=20))
                     
-                    pass
+                    #pass
                 else:
                     l=trajectory["label"][0]
                     trajectory = trajectory[trajectory['label'] != l]
@@ -360,19 +416,34 @@ class View_Trajectory(QMainWindow):
         self.simulation_center.setText("Center Simulation:  x: "+ str(round(mean_array[0])) +" y: "+ str(round(mean_array[1])))
         self.center_scene=[round(mean_array[0]),round(mean_array[1])]
 
+        if self.firstEnter:
+            #valori per definire dimensione veicolo 
+            xcar = self.ax.get_xlim()
+            ycar=self.ax.get_ylim()
+            self.valorecarx=abs(abs(xcar[0])-abs(xcar[1]))/200
+            self.valorecary=abs(abs(ycar[0])-abs(ycar[1]))/200
+
+        self.firstEnter=False
             
-         
+        self.addCarTrajectoryExist()
+
+        
 
         self.canavas.mpl_connect('pick_event',self.vehicleTrajectory)
 
-        #valori per definire dimensione veicolo 
-        xcar = self.ax.get_xlim()
-        ycar=self.ax.get_ylim()
-        self.valorecarx=abs(abs(xcar[0])-abs(xcar[1]))/200
-        self.valorecary=abs(abs(ycar[0])-abs(ycar[1]))/200
-
-    
         self.canavas.draw()
+
+    def addCarTrajectoryExist(self):
+         for label in self.data_to_plot:
+                trajectory = self.data_to_plot[label]
+                if self.trajectoryExist:
+                        car_icon = Image.open(f'./assets/{trajectory["object_type"][0]}.png')
+                        heading_degrees = math.degrees(trajectory["heading"][0])
+                        car_icon=car_icon.rotate(heading_degrees)
+                        self.ax.autoscale(False)
+                        self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[trajectory["x"][0]-self.valorecarx,trajectory["x"][0]+self.valorecarx,trajectory["y"][0]-self.valorecary,trajectory["y"][0]+self.valorecary],label=random.random() ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
+                else:
+                    break
 
     def center_simulation(self,trajectory_data):
         center_traj=trajectory_data[["x", "y"]].mean().values
@@ -401,7 +472,23 @@ class View_Trajectory(QMainWindow):
             
             car_icon = Image.open('./assets/'+self.vehicle_choose.text()+'.png')
 
-            angle= self.df["heading"].loc[self.df['label'] == event.artist.get_label()]
+            print(self.df['heading'])
+
+            print(self.df.columns)
+            print(self.df['label'] == 147036) 
+
+  
+
+            print(event.artist.get_label())
+           # print(self.df)
+            self.df['label'] = self.df['label'].astype(str)
+
+            angle= self.df['heading'].loc[self.df['label'] == event.artist.get_label()]
+
+            print()
+            
+            print("angle")
+            print(angle)
         
       
             heading_degrees = math.degrees(angle[0])
@@ -410,7 +497,7 @@ class View_Trajectory(QMainWindow):
 
             self.ax.autoscale(False)
            
-            self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[event.artist.get_xydata()[1][0]-self.valorecarx,event.artist.get_xydata()[1][0]+self.valorecarx,event.artist.get_xydata()[1][1]-self.valorecary,event.artist.get_xydata()[1][1]+self.valorecary],label=random.random() ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
+            self.sensor_vehicle.append(self.ax.imshow(car_icon, extent=[event.artist.get_xydata()[0][0]-self.valorecarx,event.artist.get_xydata()[0][0]+self.valorecarx,event.artist.get_xydata()[0][1]-self.valorecary,event.artist.get_xydata()[0][1]+self.valorecary],label=random.random() ,interpolation='antialiased',picker=True,aspect="auto",zorder=25))
             self.df.loc[self.df['label'] == event.artist.get_label(), "object_type"] = self.vehicle_choose.text()
       
            
@@ -430,9 +517,21 @@ class View_Trajectory(QMainWindow):
 
         if event.artist in self.sensor_vehicle and self.initialTool.remove_vehicle.isChecked():
 
-            self.trajectory_data=self.trajectory_data.loc[self.trajectory_data['label'] != event.artist.get_label()]
+            #self.trajectory_data=self.trajectory_data.loc[self.trajectory_data['label'] != event.artist.get_label()]
 
-            self.trajectory_data.to_csv(self.pathTrajectory, index=False)  
+            
+
+            #self.trajectory_data.to_csv(self.pathTrajectory, index=False)  
+
+            self.trajectory_data=self.trajectory_data.loc[self.trajectory_data['label'] != event.artist.get_label()]
+            self.trajectory_data["object_type"] = "None"
+            self.trajectory_data.to_csv(self.pathTrajectory, index=False) 
+
+            #self.trajectory_data.loc[self.trajectory_data['label'] == event.artist.get_label(), 'object_type'] = "None"
+            #self.df=self.df.loc[self.df['label'] != event.artist.get_label()]
+
+
+            #self.save_csv_sample()
 
             event.artist.remove()
             self.canavas.draw()
@@ -478,14 +577,14 @@ class View_Trajectory(QMainWindow):
         for line in self.lines:
             line.set_linewidth(self.valoreZoom)
 
+          
+
         self.ax.set_xlim(new_xlim)
         self.ax.set_ylim(new_ylim)
 
         self.canavas.draw()
 
     def on_mouse_move(self, event):
-        """Handle panning when the middle mouse button is held down and the mouse is moved."""
-       
 
         if self.panning and event.xdata is not None and event.ydata is not None:
             ax = self.ax  
@@ -521,6 +620,7 @@ class View_Trajectory(QMainWindow):
     #funzione che avvia simulazione in blender
     def start_simulation(self):
         try:
+            self.save_csv_sample()
 
 
             #utilizzo di multiprocessing per fare la simulazione
@@ -555,6 +655,7 @@ class View_Trajectory(QMainWindow):
             self.initialTool.start_simulation.setEnabled(True)
             self.initialTool.start_simulation.setIcon(QIcon("./assets/view3d.png"))
             self.initialTool.start_simulation.triggered.connect(lambda:self.trasformCoordinate())
+            self.result_timer.stop()
 
 
 

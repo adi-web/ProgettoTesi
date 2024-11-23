@@ -94,6 +94,7 @@ class Progress_transform(QWidget):
     
         self.thread2.start()
         self.thread2.join()
+        
         self.pbar.setValue(100)
         self.pbar.setVisible(False)
         self.title_label.setText("Tansformation completed")

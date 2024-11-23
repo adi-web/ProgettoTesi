@@ -48,7 +48,6 @@ class MainWindow(QWidget):
 
         # mostra la pagina iniziale
         self.stackedWidget.setCurrentIndex(0)
-        #print(self.stackedWidget.setCurrentIndex(0))
         layout = QVBoxLayout()
         layout.addWidget(self.stackedWidget)
 
@@ -61,7 +60,7 @@ class MainWindow(QWidget):
         self.file_name = QFileDialog.getExistingDirectory(self, "Select Folder", "", options=self.file_dialog)
 
         if self.file_name:
-            print(f"Selected folder: {self.file_name}")
+            
             self.stackedWidget.setCurrentIndex(4)
             self.page5.fromController(self.file_name)
 
@@ -76,7 +75,7 @@ class MainWindow(QWidget):
         self.page4.start(path)
         
     def show_open_3d(self):
-        print("open3d")
+       
         self.file_dialog = QFileDialog.Options()
         self.file_name = QFileDialog.getExistingDirectory(self, "Select Folder", "", options=self.file_dialog)
         if self.file_name:
@@ -85,19 +84,13 @@ class MainWindow(QWidget):
         
 
     def show_csv_choose(self):
-        #self.choose_csv=read_csv()
-        #self.start_window.hide()
-        #self.choose_csv.switch_window.connect(self.show_trajectory)
+        
         self.page2.switch_window.connect(self.show_trajectory)
         self.stackedWidget.setCurrentIndex(1)
-        #self.choose_csv.show()
+    
 
     def show_trajectory(self,trajectory_data):
-        #self.trajectory=View_Trajectory()
-        #self.choose_csv.hide()
-        #self.trajectory.show()
-        #self.trajectory.plot_trajectory(trajectory_data) 
-        
+
         self.stackedWidget.setCurrentIndex(2)
         self.page3.displayTrajectory(trajectory_data,self,self.page5)
 
@@ -127,7 +120,7 @@ class Controller:
 
     def show_trajectory(self,trajectory_data):
         self.trajectory=View_Trajectory()
-        #self.choose_csv.hide()
+      
         self.trajectory.show()
         self.trajectory.displayTrajectory(trajectory_data)    
 
@@ -136,7 +129,7 @@ class Controller:
 def main():
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
-    window.setGeometry(500,100,1200,800) # Set window size and position
+    window.setGeometry(500,100,1200,800)
     window.setWindowTitle('Blender Simulazioni')
     window.show()
     sys.exit(app.exec_())

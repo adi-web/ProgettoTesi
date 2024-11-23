@@ -156,7 +156,6 @@ class Sensor_controller(QtWidgets.QWidget):
             
             sensor_click=event
 
-            print(sensor_click.label)
             #index per indentifica nel dizionario data_pd
             index = self.data_pd["name"].index(sensor_click.label) 
 
@@ -172,6 +171,9 @@ class Sensor_controller(QtWidgets.QWidget):
            
             self.save_data_to_csv()
        
+       # for i in self.sensor_text:
+        #    self.sensor_text[i].set_fontsize(self.view_trajectory.valoreZoom)
+
 
     def add_new_sensor(self,x,y,z,index,sensor_icon):
 
@@ -185,17 +187,18 @@ class Sensor_controller(QtWidgets.QWidget):
 
         sensor_icon = sensor_icon.rotate(z)
         self.s=self.ax.imshow(sensor_icon, extent=[x-self.view_trajectory.valorecarx,x+self.view_trajectory.valorecarx,y-self.view_trajectory.valorecary,y+self.view_trajectory.valorecary],picker=True, aspect='auto', zorder=15)
-
-        self.ax.autoscale(False)
+        #self.ax.text(z,y,str(1),color="white")
+        
         self.s.label =  str(index)
-
-        text=self.ax.plot(x, y, label=self.s.label, color='white', zorder=20)
+        self.ax.autoscale(False)
+  
+        self.ax.autoscale(False)    
 
         
         self.data_pd["name"].append(self.s.label)
         #self.s.angle = 0
         self.sensor_list.append(self.s)
-        self.sensor_text[self.s.label]=text
+        #6sen   self.sensor_text[self.s.label]=text
         
         self.save_data_to_csv()
 
