@@ -308,17 +308,14 @@ class Sensor_controller(QtWidgets.QWidget):
             self.data_pd["z_rotation"][index] = self.data_pd["z_rotation"][index]+15
          
 
-            #serve per ruotare il sensore ogni 15 gradi
-            sensor_icon = self.selected_sensor.get_array().copy()  
-            pil_image = Image.fromarray(sensor_icon)  
-            rotated_image = pil_image.rotate(15, expand=False) 
-
-            
+            # Ruota l'immagine originale mantenendola immutata
+            icon=self.sensor_icon
+            rotated_image = icon.rotate( int(self.data_pd["z_rotation"][index])+15)
             self.selected_sensor.set_data(np.array(rotated_image)) 
 
             #permette di cambiare i valori nella tabella di info sensori
             self.setting_sensor[self.selected_sensor.label].z_rotation.setValue(self.data_pd["z_rotation"][index])
-           
+            
             self.save_data_to_csv()      
             self.view_trajectory.canavas.draw()
        
