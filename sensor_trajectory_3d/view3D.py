@@ -24,7 +24,7 @@ class toolOpen3d(QMainWindow):
 
         self.open3d=open3d
 
-        toolbar = QToolBar("")
+        toolbar = QToolBar("ToolBar view3d")
         toolbar.setFixedHeight(50)
        
         self.addToolBar(toolbar)
@@ -111,7 +111,7 @@ class WorkPly(QObject):
     
     def searchPlane(self,denoised_cloud):
         
-        plane_model, inliers = denoised_cloud.segment_plane(distance_threshold=0.2,
+        plane_model, inliers = denoised_cloud.segment_plane(distance_threshold=0.1,
                                          ransac_n=3,
                                          num_iterations=1000)
         # point cloud senza il piano

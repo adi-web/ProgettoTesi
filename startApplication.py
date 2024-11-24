@@ -81,8 +81,9 @@ class MainWindow(QWidget):
         self.file_dialog = QFileDialog.Options()
         self.file_name = QFileDialog.getExistingDirectory(self, "Select Folder", "", options=self.file_dialog)
         if self.file_name:
-            self.stackedWidget.setCurrentIndex(3)
+            
             self.page4.start(self.file_name)
+            self.stackedWidget.setCurrentIndex(3)
             
             
         
