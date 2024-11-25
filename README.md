@@ -3,4 +3,10 @@
 Questo progetto è stato creato per permettere agli utenti di creare scenari personalizzati, 
 eseguire simulazioni su tali scenari e visualizzarli in un ambiente tridimensionale
 
-## Installazione
+## Requisiti
+### Python 3.11
+### Conda e Conda-forge
+### Blender 2.79 con Blensor
+
+## Installazione dependency
+$ pip install -r requirements.txt
