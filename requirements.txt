@@ -1,0 +1,7 @@
+pandas==2.2.3
+numpy==2.1.2
+pillow==10.4.0
+pyqt5==5.15.11
+wheel==0.44.0
+matplotlib=3.9.2
+mathutils==3.30
