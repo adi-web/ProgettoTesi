@@ -5,3 +5,4 @@ pyqt5==5.15.11
 wheel==0.44.0
 matplotlib=3.9.2
 mathutils==3.30
+opend3d==0.18.0
