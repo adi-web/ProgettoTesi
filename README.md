@@ -10,3 +10,8 @@ eseguire simulazioni su tali scenari e visualizzarli in un ambiente tridimension
 
 ## Installazione dependency
 $ pip install -r requirements.txt
+
+## Avvio programma
+    python startApplication.py
+
+
